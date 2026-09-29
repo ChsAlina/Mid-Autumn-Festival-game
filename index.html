@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中秋之夜 · Cultivation Artifact Battle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Noto+Serif+SC:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+    --bg-dark: #0a0c18;
+    --card-bg: rgba(22, 27, 51, 0.82);
+    --card-border: rgba(226, 192, 117, 0.35);
+    --gold: #e2c075;
+    --gold-light: #fce8b2;
+    --gold-glow: rgba(226, 192, 117, 0.45);
+    --cyan-glow: rgba(163, 217, 201, 0.35);
+    --crimson: #eb6f92;
+    --text-main: #f0f3ff;
+    --text-sub: #a3abc9;
+    --font-serif: 'Noto Serif SC', 'Cinzel', serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font-sans);
+    background: radial-gradient(circle at 50% 0%, #1a2247 0%, var(--bg-dark) 75%);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(1.5px 1.5px at 10% 10%, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 20% 30%, #fce8b2, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40% 70%, #fff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 60% 20%, #fce8b2, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 85% 80%, #fff, rgba(0,0,0,0));
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.app {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10, 12, 24, 0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.brand { display: flex; gap: 16px; align-items: center; }
+.logo-moon {
+    font-size: 34px;
+    filter: drop-shadow(0 0 12px var(--gold-glow));
+    animation: pulseMoon 4s infinite alternate ease-in-out;
+}
+
+@keyframes pulseMoon {
+    from { transform: scale(1); filter: drop-shadow(0 0 10px var(--gold-glow)); }
+    to { transform: scale(1.08); filter: drop-shadow(0 0 24px var(--gold-light)); }
+}
+
+.title-group .title {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 30%, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.pinyin {
+    font-size: 0.78em;
+    color: var(--gold-light);
+    font-weight: normal;
+    display: block;
+    margin-bottom: 2px;
+}
+
+#roundBadge {
+    font-family: var(--font-serif);
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    padding: 6px 18px;
+    border: 1px solid var(--card-border);
+    border-radius: 30px;
+    background: rgba(226, 192, 117, 0.08);
+}
+
+main {
+    width: min(1180px, 94%);
+    margin: 0 auto;
+    padding: 24px 0 40px;
+    flex: 1;
+}
+
+.screen { display: none; animation: fadeIn 0.5s ease; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.teams {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.team-card {
+    padding: 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.team-card:hover {
+    border-color: rgba(226, 192, 117, 0.6);
+    transform: translateY(-2px);
+}
+
+.team-card .name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+.team-card .score {
+    font-family: var(--font-serif);
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-top: 4px;
+    text-shadow: 0 0 15px var(--gold-glow);
+}
+
+.team-card .buffs {
+    font-size: 11px;
+    color: #a3d9c9;
+    margin-top: 4px;
+    min-height: 16px;
+}
+
+.team-card.active {
+    background: rgba(226, 192, 117, 0.16);
+    border-color: var(--gold);
+    box-shadow: 0 0 22px var(--gold-glow);
+    transform: translateY(-2px);
+}
+
+.team-select-prompt {
+    font-size: 13px;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.question-container { text-align: center; margin-bottom: 24px; }
+.question-title {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 12px 0;
+    color: #fff;
+}
+
+.answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.btn-answer {
+    padding: 18px 22px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-answer:hover:not(:disabled) {
+    border-color: var(--gold);
+    background: rgba(226, 192, 117, 0.12);
+    transform: translateY(-2px);
+}
+
+.btn-answer.correct {
+    background: rgba(163, 217, 201, 0.25);
+    border-color: #a3d9c9;
+    box-shadow: 0 0 20px var(--cyan-glow);
+}
+
+.btn-answer.wrong {
+    background: rgba(235, 111, 146, 0.25);
+    border-color: #eb6f92;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #c8a353 100%);
+    color: #0d101d;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 34px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px var(--gold-glow);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(226, 192, 117, 0.6);
+}
+
+.choice-layout {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 24px;
+}
+
+.scene-card {
+    position: relative;
+    min-height: 480px;
+    border-radius: 24px;
+    background: radial-gradient(circle at 80% 20%, #2a3563 0%, #11152b 80%);
+    border: 1px solid var(--card-border);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.moon-element {
+    position: absolute;
+    right: 10%; top: 32px;
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--gold-light) 70%, var(--gold) 100%);
+    box-shadow: 0 0 60px rgba(252, 232, 178, 0.5);
+}
+
+.mountain-svg {
+    position: absolute;
+    bottom: 0; width: 100%;
+    fill: #090b14;
+    opacity: 0.95;
+}
+
+.avatar {
+    font-size: 140px;
+    z-index: 3;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6));
+}
+
+.placed-artifact {
+    position: absolute;
+    z-index: 4;
+    background: rgba(18, 22, 45, 0.92);
+    border: 1.5px solid var(--gold);
+    padding: 8px 14px;
+    border-radius: 14px;
+    box-shadow: 0 0 25px var(--gold-glow);
+    backdrop-filter: blur(8px);
+    animation: magicPop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gold-light);
+    font-size: 13px;
+}
+
+@keyframes magicPop {
+    0% { transform: scale(0) translateY(30px) rotate(-10deg); opacity: 0; filter: brightness(2); }
+    60% { transform: scale(1.2) translateY(-5px) rotate(3deg); opacity: 1; filter: brightness(1.5); }
+    100% { transform: scale(1) translateY(0) rotate(0deg); filter: brightness(1); }
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.reward-card {
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.reward-card:hover {
+    border-color: var(--gold);
+    background: rgba(226, 192, 117, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--gold-glow);
+}
+
+.reward-card .icon-box {
+    font-size: 28px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+}
+
+.reward-card .info { flex: 1; }
+.reward-card .info .name { font-weight: 700; font-size: 14px; color: #fff; }
+.reward-card .info .desc { font-size: 11px; color: var(--text-sub); margin-top: 2px; line-height: 1.3; }
+
+.pts-badge {
+    background: rgba(226, 192, 117, 0.18);
+    color: var(--gold-light);
+    border: 1px solid var(--gold);
+    padding: 5px 9px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.status-msg {
+    min-height: 24px;
+    margin: 16px 0;
+    font-size: 15px;
+    color: var(--gold-light);
+}
+
+.event-banner {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 12, 24, 0.88);
+    border: 1px solid var(--gold);
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--gold-light);
+    z-index: 5;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+}
+
+@media(max-width: 900px) {
+    .teams, .answers-grid, .choice-layout { grid-template-columns: 1fr; }
+    header { padding: 16px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <header>
+        <div class="brand">
+            <div class="logo-moon">🌕</div>
+            <div class="title-group">
+                <div class="title">
+                    <span class="pinyin">zhōng qiū zhī yè</span>
+                    中秋之夜 · CULTIVATION BATTLE
+                </div>
+                <div class="sub">Interactive Xianxia Grand Quiz</div>
+            </div>
+        </div>
+        <div id="roundBadge">WELCOME</div>
+    </header>
+
+    <main>
+        <!-- SCREEN 1: WELCOME -->
+        <section id="welcome" class="screen active">
+            <div style="text-align: center; margin-bottom: 28px;">
+                <div style="font-size: 50px; margin-bottom: 10px;">🌕 ⚔️ 🔮 🥮 🍶</div>
+                <h1 style="font-family: var(--font-serif); font-size: 42px; color: var(--gold-light);">
+                    <span class="pinyin" style="font-size: 18px;">zhōng qiū jié dà tiǎo zhàn</span>
+                    中秋节大挑战 (15 Rounds)
+                </h1>
+                <p style="color: var(--text-sub); font-size: 16px;">15 Questions · Manual Team Speed Pick · Relic Artifacts</p>
+            </div>
+
+            <div class="card" style="text-align: center; max-width: 820px; margin: 0 auto;">
+                <h2 style="font-family: var(--font-serif); font-weight: 500; margin-bottom: 10px;">
+                    <span class="pinyin">bǐ sài guī zé</span>
+                    比赛规则 (Game Rules)
+                </h2>
+                <p style="color: var(--text-sub); font-size: 14px; line-height: 1.6;">
+                    Click the team card that shouts/answers first to select who is answering! Correct answers unlock powerful artifacts: <b>🔮 Spirit Pearl</b> (+50 pts/rnd passive), <b>⚔️ Immortal Sword</b> (-50 pts to all rivals), or high point relics!
+                </p>
+
+                <div class="teams" style="margin: 24px 0;">
+                    <div class="team-card">
+                        <div class="name">🌙 Team 1<br><span class="pinyin">dì yī duì</span>第一队</div>
+                    </div>
+                    <div class="team-card">
+                        <div class="name">🏮 Team 2<br><span class="pinyin">dì èr duì</span>第二队</div>
+                    </div>
+                    <div class="team-card">
+                        <div class="name">🐇 Team 3<br><span class="pinyin">dì sān duì</span>第三队</div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="startGame()">
+                    START GAME (<span class="pinyin">kāi shǐ bǐ sài</span>开始比赛) →
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: GAMEPLAY -->
+        <section id="game" class="screen">
+            <div class="team-select-prompt" style="text-align:center;">👉 Click on the team that raises hand/shouts to assign turn:</div>
+            <div class="teams" id="scoreboard"></div>
+            
+            <div class="card" style="text-align: center;">
+                <div class="question-container">
+                    <div id="roundSubTitle" style="color: var(--gold); font-size: 15px; font-weight: 600;"></div>
+                    <div class="question-title" id="questionText"></div>
+                </div>
+
+                <div id="answersGrid" class="answers-grid"></div>
+
+                <div id="statusMsg" class="status-msg"></div>
+
+                <div style="margin-top: 20px;">
+                    <button id="nextBtn" class="btn-primary" style="display:none;" onclick="nextStep()">
+                        CLAIM ARTIFACT (<span class="pinyin">xuǎn zé fǎ bǎo</span>选择法宝) →
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: ARTIFACT CHOICE -->
+        <section id="choice" class="screen">
+            <div class="teams" id="choiceScoreboard" style="pointer-events: none;"></div>
+
+            <div class="choice-layout">
+                <div class="scene-card" id="moonScene">
+                    <div class="moon-element"></div>
+                    <svg class="mountain-svg" viewBox="0 0 500 150" preserveAspectRatio="none">
+                        <path d="M0,150 L0,90 L120,40 L220,100 L340,30 L450,110 L500,70 L500,150 Z"></path>
+                    </svg>
+                    <div class="avatar">👘</div>
+                    <div class="event-banner" id="eventBanner">✨ Moonlit Cultivation Altar</div>
+                </div>
+
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="color: var(--gold); font-size: 12px; font-weight: 700;">ANCIENT ARTIFACTS (法宝)</div>
+                        <h2 id="choiceTitle" style="font-family: var(--font-serif); font-size: 22px; margin: 4px 0;">Claim your Relic</h2>
+                        <p style="color: var(--text-sub); font-size: 12px;">Choose wisely to empower your sect!</p>
+
+                        <div class="rewards-grid" id="rewardsGrid"></div>
+                    </div>
+
+                    <div style="margin-top: 14px; text-align: center;">
+                        <button id="continueBtn" class="btn-primary" style="display:none; width:100%; font-size:16px;" onclick="proceedToNextRound()">
+                            CONTINUE QUIZ (<span class="pinyin">jì xù</span>继续) →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: FINAL CELEBRATION -->
+        <section id="final" class="screen">
+            <div class="card" style="text-align: center; padding: 60px 20px;">
+                <div style="font-size: 64px; margin-bottom: 12px;">🌕 🏮 🥮 👑</div>
+                <h1 style="font-family: var(--font-serif); font-size: 40px; color: var(--gold-light);">
+                    <span class="pinyin" style="font-size: 18px;">zhōng qiū jié kuài lè</span>
+                    中秋节快乐！
+                </h1>
+                <p style="font-size: 18px; color: var(--text-sub); margin-top: 6px;">Happy Mid-Autumn Festival!</p>
+                
+                <p id="winnerText" style="font-size: 22px; font-weight: 600; margin: 30px 0; color: #fff;"></p>
+
+                <button class="btn-primary" onclick="location.reload()">PLAY AGAIN (重新开始)</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+const teams = [
+    { name: "Team 1", cn: "第一队", pinyin: "dì yī duì", icon: "🌙", score: 0, hasPearl: false },
+    { name: "Team 2", cn: "第二队", pinyin: "dì èr duì", icon: "🏮", score: 0, hasPearl: false },
+    { name: "Team 3", cn: "第三队", pinyin: "dì sān duì", icon: "🐇", score: 0, hasPearl: false }
+];
+
+let currentTeam = 0;
+let roundIndex = 0;
+let isAnswered = false;
+
+// Custom 15 Questions based on user input
+const rounds = [
+    {
+        q: "中秋节为什么也被称为“团圆节”？<br><small style='color:#a3abc9;'>Why is the Mid-Autumn Festival also called the “Reunion Festival”?</small>",
+        a: [
+            "A) 因为大家一起吃饭 <small>(Because everyone eats together)</small>",
+            "B) 因为圆月象征家人团聚 <small>(Because the full moon symbolizes family reunion)</small>",
+            "C) 因为月饼是圆的 <small>(Because mooncakes are round)</small>",
+            "D) 因为节日在星期日 <small>(Because the festival is on Sunday)</small>"
+        ],
+        c: 1
+    },
+    {
+        q: "“举头望明月，低头思故乡”是谁写的？<br><small style='color:#a3abc9;'>Who wrote “I raise my head and gaze at the bright moon; I lower my head and think of my hometown”?</small>",
+        a: [
+            "A) 李白 <small>(Li Bai)</small>",
+            "B) 杜甫 <small>(Du Fu)</small>",
+            "C) 白居易 <small>(Bai Juyi)</small>",
+            "D) 王维 <small>(Wang Wei)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "传说中的神射手“后羿”是谁？<br><small style='color:#a3abc9;'>Who is Hou Yi in Chinese mythology?</small>",
+        a: [
+            "A) 射下九个太阳的英雄 <small>(The hero who shot down nine suns)</small>",
+            "B) 月宫里的仙女 <small>(Goddess of the Moon)</small>",
+            "C) 住在月亮上的玉兔 <small>(The Jade Rabbit on the moon)</small>",
+            "D) 砍桂树的仙人 <small>(The man chopping the osmanthus tree)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "在嫦娥的故事中，后羿为什么得到长生不老药？<br><small style='color:#a3abc9;'>In the legend of Chang'e, why did Hou Yi receive the elixir of immortality?</small>",
+        a: [
+            "A) 因为他射下了九个太阳 <small>(Because he shot down nine suns)</small>",
+            "B) 因为他打败了玉兔 <small>(Because he defeated the Jade Rabbit)</small>",
+            "C) 因为เขา发现了月亮 <small>(Because he discovered the Moon)</small>",
+            "D) 因为他创造了月饼 <small>(Because he created mooncakes)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "传说中，月宫里除了嫦娥，还有谁？<br><small style='color:#a3abc9;'>According to legend, who else lives in the Moon Palace besides Chang'e?</small>",
+        a: [
+            "A) 玉兔 <small>(Jade Rabbit)</small>",
+            "B) 熊猫 <small>(Panda)</small>",
+            "C) 龙王 <small>(Dragon King)</small>",
+            "D) 哪吒 <small>(Nezha)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "为什么古人喜欢在中秋节“赏月”？<br><small style='color:#a3abc9;'>Why did people traditionally admire the Moon during Mid-Autumn Festival?</small>",
+        a: [
+            "A) 因为秋天的月亮特别近 <small>(Moon is close in autumn)</small>",
+            "B) 因为满月象征团圆和完整 <small>(Full moon symbolizes reunion & completeness)</small>",
+            "C) 因为月亮会变成红色 <small>(Moon turns red)</small>",
+            "D) 因为晚上没有其他活动 <small>(No other activities)</small>"
+        ],
+        c: 1
+    },
+    {
+        q: "下列哪一个和中秋节的传统文化联系最少？<br><small style='color:#a3abc9;'>Which of the following is least connected with Mid-Autumn Festival culture?</small>",
+        a: [
+            "A) 赏月 <small>(Admiring the moon)</small>",
+            "B) 团圆 <small>(Reunion)</small>",
+            "C) 月饼 <small>(Mooncakes)</small>",
+            "D) 赛龙舟 <small>(Dragon boat racing)</small>"
+        ],
+        c: 3
+    },
+    {
+        q: "中国传统文化中，月亮除了代表团圆，还常常代表什么？<br><small style='color:#a3abc9;'>In traditional Chinese culture, besides reunion, what can the Moon represent?</small>",
+        a: [
+            "A) 对远方亲人的思念 <small>(Longing for loved ones far away)</small>",
+            "B) 战争 <small>(War)</small>",
+            "C) 财富 <small>(Wealth)</small>",
+            "D) 权力 <small>(Power)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "为什么“月亮”在中国古诗中经常和“思乡”联系在一起？<br><small style='color:#a3abc9;'>Why is the Moon often connected with homesickness in Chinese poetry?</small>",
+        a: [
+            "A) 因为月亮只有在家乡才能看到 <small>(Moon only visible at home)</small>",
+            "B) 因为古人看到同一个月亮，会想到远方的家人和家乡 <small>(Same moon makes people think of distant hometown)</small>",
+            "C) 因为月亮代表旅行 <small>(Moon represents travel)</small>",
+            "D) 因为古人晚上不能睡觉 <small>(People couldn't sleep)</small>"
+        ],
+        c: 1
+    },
+    {
+        q: "传说中在月宫砍桂树的人是谁？<br><small style='color:#a3abc9;'>Who is destined to chop the osmanthus tree on the moon?</small>",
+        a: [
+            "A) 后羿 <small>(Hòu Yì)</small>",
+            "B) 吴刚 <small>(Wú Gāng)</small>",
+            "C) 夸父 <small>(Kuā Fù)</small>",
+            "D) 彭祖 <small>(Péng Zǔ)</small>"
+        ],
+        c: 1
+    },
+    {
+        q: "后羿用弓箭射下了几个太阳？<br><small style='color:#a3abc9;'>How many suns did Hou Yi shoot down with his bow?</small>",
+        a: [
+            "A) 8 个",
+            "B) 9 个",
+            "C) 10 个",
+            "D) 7 个"
+        ],
+        c: 1
+    },
+    {
+        q: "中秋节人们常喝什么传统的酒？<br><small style='color:#a3abc9;'>Which traditional wine is drunk during Mid-Autumn Festival?</small>",
+        a: [
+            "A) 桂花酒 <small>(Guìhuā jiǔ / Osmanthus wine)</small>",
+            "B) 菊花酒 <small>(Júhuā jiǔ / Chrysanthemum wine)</small>",
+            "C) 青梅酒 <small>(Qīngméi jiǔ / Green plum wine)</small>",
+            "D) 米酒 <small>(Mǐjiǔ / Rice wine)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "玉兔在月宫里主要做什么？<br><small style='color:#a3abc9;'>What is the Jade Rabbit doing in the Moon Palace?</small>",
+        a: [
+            "A) 捣药 <small>(Pounding immortal medicine)</small>",
+            "B) 做月饼 <small>(Making mooncakes)</small>",
+            "C) 种树 <small>(Planting trees)</small>",
+            "D) 唱歌 <small>(Singing songs)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "“嫦娥奔月” 故事中的仙药是谁给后羿的？<br><small style='color:#a3abc9;'>Who gave the elixir of immortality to Hou Yi?</small>",
+        a: [
+            "A) 西王母 <small>(Queen Mother of the West)</small>",
+            "B) 玉皇大帝 <small>(Jade Emperor)</small>",
+            "C) 太上老君 <small>(Taishang Laojun)</small>",
+            "D) 观音菩萨 <small>(Guanyin)</small>"
+        ],
+        c: 0
+    },
+    {
+        q: "传说中，嫦娥为什么飞到了月亮上？<br><small style='color:#a3abc9;'>According to legend, why did Chang'e fly to the Moon?</small>",
+        a: [
+            "A) 因为她想旅行 <small>(Because she wanted to travel)</small>",
+            "B) 因为她吃了长生不老药 <small>(Because she took the elixir of immortality)</small>",
+            "C) 因为她喜欢月亮 <small>(Because she liked the Moon)</small>",
+            "D) 因为后羿让她去 <small>(Because Hou Yi asked her to go)</small>"
+        ],
+        c: 1
+    }
+];
+
+// Xianxia Artifacts List
+let artifacts = [
+    {
+        id: "sword",
+        icon: "⚔️",
+        cn: "斩仙剑",
+        pinyin: "zhǎn xiān jiàn",
+        name: "Immortal Sword",
+        desc: "Strike enemy sects! Drains -50 pts from ALL rival teams upon acquisition.",
+        ptsDisplay: "⚡ STRIKE ALL (-50)",
+        unique: true,
+        pos: "top: 28%; left: 18%;"
+    },
+    {
+        id: "pearl",
+        icon: "🔮",
+        cn: "灵犀珠",
+        pinyin: "líng xī zhū",
+        name: "Spirit Pearl",
+        desc: "Ancient relic! Gives +50 passive pts EVERY round to owner sect.",
+        ptsDisplay: "🌟 PASSIVE +50/rnd",
+        unique: true,
+        pos: "top: 20%; left: 72%;"
+    },
+    {
+        id: "crown",
+        icon: "👑",
+        cn: "华龙冠",
+        pinyin: "huá lóng guān",
+        name: "Dragon Crown",
+        desc: "Supreme imperial adornment. Grants massive cultivation score.",
+        ptsDisplay: "+350 PTS",
+        pts: 350,
+        pos: "top: 14%; left: 45%;"
+    },
+    {
+        id: "wine",
+        icon: "🍶",
+        cn: "桂花酒",
+        pinyin: "guì huā jiǔ",
+        name: "Osmanthus Wine",
+        desc: "Immortal elixir brewed with moonlit blossoms. High score bonus!",
+        ptsDisplay: "+250 PTS",
+        pts: 250,
+        pos: "top: 45%; left: 75%;"
+    },
+    {
+        id: "jade",
+        icon: "📿",
+        cn: "羊脂玉佩",
+        pinyin: "yáng zhī yù pèi",
+        name: "Mutton-Fat Jade",
+        desc: "Pure spiritual jade pendant. Grants high cultivation essence.",
+        ptsDisplay: "+200 PTS",
+        pts: 200,
+        pos: "top: 58%; left: 24%;"
+    },
+    {
+        id: "lantern",
+        icon: "🏮",
+        cn: "宫灯",
+        pinyin: "gōng dēng",
+        name: "Palace Lantern",
+        desc: "Warm glowing lantern guiding the celestial path.",
+        ptsDisplay: "+180 PTS",
+        pts: 180,
+        pos: "top: 38%; left: 22%;"
+    },
+    {
+        id: "scroll",
+        icon: "📜",
+        cn: "仙人宝卷",
+        pinyin: "xiān rén bǎo juàn",
+        name: "Immortal Scroll",
+        desc: "Ancient wisdom scroll recorded by moon sages.",
+        ptsDisplay: "+160 PTS",
+        pts: 160,
+        pos: "top: 68%; left: 42%;"
+    },
+    {
+        id: "fan",
+        icon: "🪭",
+        cn: "阴阳扇",
+        pinyin: "yīn yáng shàn",
+        name: "Yin-Yang Fan",
+        desc: "Steal 150 points directly from one target team!",
+        ptsDisplay: "⚡ STEAL 150",
+        pos: "top: 65%; left: 68%;"
+    },
+    {
+        id: "cake",
+        icon: "🥮",
+        cn: "冰皮月饼",
+        pinyin: "bīng pí yuè bǐng",
+        name: "Snowskin Mooncake",
+        desc: "Delicious frozen delicacy loved by Chang'e.",
+        ptsDisplay: "+120 PTS",
+        pts: 120,
+        pos: "top: 52%; left: 52%;"
+    }
+];
+
+function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+function startGame() {
+    showScreen("game");
+    roundIndex = 0;
+    currentTeam = 0;
+    renderScores();
+    loadRound();
+}
+
+function selectTeam(index) {
+    if (isAnswered) return;
+    currentTeam = index;
+    renderScores();
+    document.getElementById("roundSubTitle").innerHTML = `<b>SELECTED:</b> ${teams[currentTeam].icon} ${teams[currentTeam].name} (${teams[currentTeam].cn}) is answering!`;
+}
+
+function renderScores() {
+    const html = teams.map((t, idx) => `
+        <div class="team-card ${idx === currentTeam ? 'active' : ''}" onclick="selectTeam(${idx})">
+            <div class="name">${t.icon} ${t.name}<br><span class="pinyin">${t.pinyin}</span>${t.cn}</div>
+            <div class="score">${t.score}</div>
+            <div class="buffs">${t.hasPearl ? '🔮 Spirit Pearl (+50/rnd)' : ''}</div>
+        </div>
+    `).join("");
+    document.getElementById("scoreboard").innerHTML = html;
+    document.getElementById("choiceScoreboard").innerHTML = html;
+}
+
+function loadRound() {
+    isAnswered = false;
+
+    // Apply Passive Spirit Pearl Effect
+    teams.forEach(t => {
+        if (t.hasPearl) {
+            t.score += 50;
+        }
+    });
+    renderScores();
+
+    const r = rounds[roundIndex];
+    document.getElementById("roundBadge").textContent = `ROUND ${roundIndex + 1} / 15`;
+    document.getElementById("roundSubTitle").innerHTML = `Click team card above to select who answers! Currently: <b>${teams[currentTeam].name}</b>`;
+    document.getElementById("questionText").innerHTML = r.q;
+    document.getElementById("statusMsg").textContent = "Select team first, then choose the answer!";
+    document.getElementById("nextBtn").style.display = "none";
+
+    const grid = document.getElementById("answersGrid");
+    grid.innerHTML = "";
+
+    r.a.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "btn-answer";
+        btn.innerHTML = opt;
+        btn.onclick = () => handleAnswer(idx, btn);
+        grid.appendChild(btn);
+    });
+}
+
+function handleAnswer(selectedIdx, btn) {
+    if (isAnswered) return;
+    const r = rounds[roundIndex];
+
+    if (selectedIdx === r.c) {
+        isAnswered = true;
+        btn.classList.add("correct");
+        document.getElementById("statusMsg").textContent = `🎉 回答正确！(Correct!) ${teams[currentTeam].name} wins this round!`;
+        document.querySelectorAll(".btn-answer").forEach(b => b.disabled = true);
+        document.getElementById("nextBtn").style.display = "inline-block";
+    } else {
+        btn.classList.add("wrong");
+        document.getElementById("statusMsg").textContent = `❌ 答错了 (Incorrect!) Pass turn or select another team!`;
+    }
+}
+
+function nextStep() {
+    showChoiceScreen();
+}
+
+function showChoiceScreen() {
+    showScreen("choice");
+    document.getElementById("roundBadge").textContent = `ARTIFACT SELECTION (${roundIndex + 1}/15)`;
+    document.getElementById("choiceTitle").textContent = `${teams[currentTeam].name}, Claim a Cultivation Relic!`;
+    document.getElementById("continueBtn").style.display = "none";
+
+    const grid = document.getElementById("rewardsGrid");
+    grid.innerHTML = "";
+
+    artifacts.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "reward-card";
+        card.innerHTML = `
+            <div class="icon-box">${item.icon}</div>
+            <div class="info">
+                <div class="name"><span class="pinyin">${item.pinyin}</span>${item.cn} (${item.name})</div>
+                <div class="desc">${item.desc}</div>
+            </div>
+            <span class="pts-badge">${item.ptsDisplay}</span>
+        `;
+        card.onclick = () => applyArtifact(item);
+        grid.appendChild(card);
+    });
+}
+
+function applyArtifact(item) {
+    const scene = document.getElementById("moonScene");
+    const banner = document.getElementById("eventBanner");
+
+    if (item.id === "sword") {
+        teams.forEach((t, idx) => {
+            if (idx !== currentTeam) {
+                t.score = Math.max(0, t.score - 50);
+            }
+        });
+        banner.innerHTML = `⚔️ ${teams[currentTeam].name} unleashed Immortal Sword! All rivals lost -50 pts!`;
+    } else if (item.id === "pearl") {
+        teams[currentTeam].hasPearl = true;
+        banner.innerHTML = `🔮 ${teams[currentTeam].name} attuned with Spirit Pearl! Passive +50 pts every round.`;
+    } else if (item.id === "fan") {
+        const targetTeamIdx = prompt("Steal 150 points from which team? Enter 1, 2, or 3:");
+        const idx = parseInt(targetTeamIdx) - 1;
+        if (idx >= 0 && idx < teams.length && idx !== currentTeam) {
+            teams[idx].score = Math.max(0, teams[idx].score - 150);
+            teams[currentTeam].score += 150;
+            banner.innerHTML = `🪭 ${teams[currentTeam].name} stole 150 pts from ${teams[idx].name}!`;
+        } else {
+            teams[currentTeam].score += 100;
+            banner.innerHTML = `🪭 Yin-Yang Fan granted +100 pts!`;
+        }
+    } else {
+        teams[currentTeam].score += item.pts;
+        banner.innerHTML = `✨ +${item.pts} pts! ${teams[currentTeam].name} acquired ${item.icon} ${item.cn}`;
+    }
+
+    const elem = document.createElement("div");
+    elem.className = "placed-artifact";
+    elem.style.cssText = item.pos;
+    elem.innerHTML = `<span>${item.icon}</span> <b>${item.cn}</b>`;
+    scene.appendChild(elem);
+
+    if (item.unique) {
+        artifacts = artifacts.filter(a => a.id !== item.id);
+    }
+
+    renderScores();
+
+    document.getElementById("rewardsGrid").innerHTML = `<p style="text-align:center; color: var(--gold-light); font-weight:600; padding:20px;">✨ Relic attuned! Click below to continue.</p>`;
+    document.getElementById("continueBtn").style.display = "block";
+}
+
+function proceedToNextRound() {
+    roundIndex++;
+    if (roundIndex >= rounds.length) {
+        finishGame();
+    } else {
+        renderScores();
+        showScreen("game");
+        loadRound();
+    }
+}
+
+function finishGame() {
+    showScreen("final");
+    document.getElementById("roundBadge").textContent = "FINALE";
+    const winner = [...teams].sort((a, b) => b.score - a.score)[0];
+    document.getElementById("winnerText").textContent = `🏆 Cultivation Supreme: ${winner.name} (${winner.cn}) with ${winner.score} Points!`;
+}
+</script>
+</body>
+</html> 
